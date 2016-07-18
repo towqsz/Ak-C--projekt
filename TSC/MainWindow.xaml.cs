@@ -22,8 +22,8 @@ namespace TSC
     /// </summary>
     public partial class MainWindow : Window
     {
-        public ObservableCollection<Note> NotesList;
-        public ObservableCollection<Person> PersonsList;
+        private ObservableCollection<Note> NotesList;
+        private ObservableCollection<Person> PersonsList;
         private SaveTool saves = new SaveTool();
 
         public MainWindow()
@@ -35,14 +35,14 @@ namespace TSC
             {
                 readNote();
                 readPerson();
+
             } catch
             {
                 createDirectory();
             }
         }
 
-        //private Person person=new Person();
-        //private Note note = new Note();
+       
         private enum State {MAIN, ADD};
         private enum NoteType {Notatka, Osoba, Data };
         NoteType noteType;
@@ -65,11 +65,18 @@ namespace TSC
             ConfWindow.Show();
         }
 
+        private void alreadyExists()
+        {
+            ConfirmationWindow ConfWindow = new ConfirmationWindow();            
+            ConfWindow.setConfirmation(1);
+            ConfWindow.Show();
+        }
+
         private void createDirectory()
         {
-            string pathFolder = @"\saves";
-            string noteFile = @"\saves\notes.xml";
-            string personFile = @"\saves\people.xml";
+            string pathFolder = @"saves";
+            string noteFile = saves.pathNote;
+            string personFile = saves.pathPerson;
             System.IO.Directory.CreateDirectory(pathFolder);
 
             if (!System.IO.File.Exists(noteFile))
@@ -87,11 +94,14 @@ namespace TSC
 
         private void readPerson()
         {
-
-            System.Xml.Serialization.XmlSerializer reader =
-                   new System.Xml.Serialization.XmlSerializer(typeof(ObservableCollection<Person>));
-            System.IO.StreamReader file = new System.IO.StreamReader(saves.pathPerson);
-            PersonsList = (ObservableCollection<Person>)reader.Deserialize(file);
+            try
+            {
+                System.Xml.Serialization.XmlSerializer reader =
+                       new System.Xml.Serialization.XmlSerializer(typeof(ObservableCollection<Person>));
+                System.IO.StreamReader file = new System.IO.StreamReader(saves.pathPerson);
+                PersonsList = (ObservableCollection<Person>)reader.Deserialize(file);
+            }
+            catch { }
         }
 
         private void SetChoice(int index)
@@ -111,12 +121,18 @@ namespace TSC
             Note note = new Note();
             if (type == NoteType.Notatka)
             {
+
                 note.Title = PhoneText.Text;
                 note.NotesText = textBox.Text;
-                NotesList.Add(note);
-                confirm(true);
+                if (!note.compare(NotesList))
+                {
+                    NotesList.Add(note);
+                    confirm(true);
+                }
+                else
+                    alreadyExists();
             } 
-
+            
             else if (type == NoteType.Osoba)
             {
                 person.FirstName = FirstNameText.Text;
@@ -132,8 +148,14 @@ namespace TSC
                 }
                 
                 person.NotesText = textBox.Text;
-                PersonsList.Add(person);
-                confirm(true);
+                if (!person.compare(PersonsList))
+                {
+                    PersonsList.Add(person);
+                    confirm(true);
+                }
+                else
+                    alreadyExists();
+                
                 
                 
             }
@@ -142,11 +164,14 @@ namespace TSC
         private void readNote()
         {
 
-            System.Xml.Serialization.XmlSerializer reader =
-                    new System.Xml.Serialization.XmlSerializer(typeof(ObservableCollection<Note>));
-            System.IO.StreamReader file = new System.IO.StreamReader(saves.pathNote);
-            NotesList = (ObservableCollection<Note>)reader.Deserialize(file);
-
+            try
+            {
+                System.Xml.Serialization.XmlSerializer reader =
+                        new System.Xml.Serialization.XmlSerializer(typeof(ObservableCollection<Note>));
+                System.IO.StreamReader file = new System.IO.StreamReader(saves.pathNote);
+                NotesList = (ObservableCollection<Note>)reader.Deserialize(file);
+            }
+            catch { }
 
         }
 
@@ -255,6 +280,15 @@ namespace TSC
             else if (state == State.ADD)
             {
                 addNote(noteType);
+                try
+                {
+                    this.saves.write(NotesList);
+                    this.saves.write(PersonsList);
+                }
+                catch
+                {
+                    confirm(false);
+                }
             }
                 
         }
@@ -263,6 +297,7 @@ namespace TSC
         {
             if (state != State.MAIN)
             {
+
                 ChangeState(State.MAIN);
 
             }
@@ -283,10 +318,6 @@ namespace TSC
 
         }
 
-        private void save_Click(object sender, RoutedEventArgs e)
-        {
-            this.saves.write(NotesList);
-            this.saves.write(PersonsList);
-        }
+        
     }
 }

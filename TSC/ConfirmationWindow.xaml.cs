@@ -31,17 +31,22 @@ namespace TSC
                 label.Content = labels[0];
                 label.Background = Brushes.Green;
             }
-            else
+            else if (i == 1)
+            {
+                label.Content = labels[2];
+                label.Background = Brushes.Red;
+            } else
             {
                 label.Content = labels[1];
                 label.Background = Brushes.Red;
             }
-            
+
         }
 
         private string[] labels = {
             "Dodawanie notatki zakończone sukcesem!",
             "Niesty wystąpił błąd! Sprawdź dane i spróbuj ponownie.",
+            "Istnieje już taka notatka!"
              };
 
         private void ok_Click(object sender, RoutedEventArgs e)

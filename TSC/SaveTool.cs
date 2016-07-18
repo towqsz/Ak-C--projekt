@@ -15,8 +15,9 @@ namespace TSC
 
         public SaveTool()
         {
-            pathNote = @"/saves/notes.xml";
-            pathPerson = @"/saves/people.xml";
+            //string pat=Path.GetFullPath(Path.GetFileName(String));
+            pathNote = @"saves\notes.xml";
+            pathPerson = @"saves\people.xml";
         }
 
         public void write(ObservableCollection<Note> NotesList)
